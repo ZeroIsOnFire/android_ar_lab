@@ -11,6 +11,9 @@ import android.view.View
 import com.google.ar.core.Anchor
 import com.google.ar.core.Plane
 import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.Node
+import com.google.ar.sceneform.math.Quaternion
+import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
@@ -70,6 +73,8 @@ class MainActivity : AppCompatActivity() {
         val transformableNode = TransformableNode(fragment.transformationSystem)
         transformableNode.renderable = renderable
         transformableNode.setParent(anchorNode)
+        // Normaliza a rotação do eixo x do node, pois o modelo testado está fora de padrão
+        transformableNode.localRotation = Quaternion.axisAngle(Vector3(0f, 1f, 0f), 215f)
         fragment.arSceneView.scene.addChild(anchorNode)
         transformableNode.select()
     }
@@ -90,8 +95,21 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when(item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_clear -> clearAllObjectsFromScene(fragment)
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    // Remove todas as anchors de uma cena
+    private fun clearAllObjectsFromScene(fragment: ArFragment): Boolean {
+        var session = fragment.arSceneView.session
+
+        if (session != null) {
+            for (anchor in session.allAnchors) {
+                anchor.detach()
+            }
+        }
+
+        return true
     }
 }
